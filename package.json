@@ -1,0 +1,28 @@
+{
+  "name": "nodejs_todos",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.ts",
+  "scripts": {
+    "start": "nodemon --watch .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/jwt-express": "^1.1.6",
+    "@types/node": "^20.11.30",
+    "nodemon": "^3.1.0",
+    "typescript": "^5.4.2"
+  },
+  "dependencies": {
+    "body-parser": "^2.0.0-beta.2",
+    "dotenv": "^16.4.5",
+    "express": "^5.0.0-beta.2",
+    "joi": "^17.12.2",
+    "jwt-express": "^1.1.0",
+    "mongoose": "^8.2.2",
+    "ts-node": "^10.9.2"
+  }
+}
