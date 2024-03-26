@@ -10,7 +10,7 @@ export function errorHandler(
     next();
   }
 
-  // console.log(err.message)
+  console.log(err.message)
   // console.log(err.name.includes("pseudo"))
 
   switch (err.name) {

@@ -3,6 +3,14 @@ import { validatorArtiste, validatorArtisteUpdate } from "./models";
 import { User } from "../users/model";
 import bcrypt from "bcrypt";
 
+async function pseudoNotUnique(pseudo:string){
+  const user = await User.findOne({pseudo:pseudo}).select('-password -salt -__v')
+  if(user){
+    return true
+  }
+  return false
+}
+
 
 export const routerArtistes = Router();
 
@@ -20,10 +28,16 @@ routerArtistes.post("/register", async (req, res) => {
   value.role = "artiste"
   value.ban = false
 
+  if(value.pseudo !== undefined){
+    const user = await pseudoNotUnique(value.pseudo)
+    if(user){
+      return res.status(400).json({ message: "This pseudo is already used." });
+    }
+  }
+
   await new User(value).save()
 
   User.findOne({email:value.email}).select('-password -salt -__v').then(artiste => {
-    console.log(artiste)
     if (artiste) {
       const token = res.jwt({
         userId: artiste._id.toString(),
