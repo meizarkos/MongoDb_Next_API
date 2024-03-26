@@ -10,9 +10,6 @@ export function errorHandler(
     next();
   }
 
-  console.log(err.message)
-  // console.log(err.name.includes("pseudo"))
-
   switch (err.name) {
     case "ValidationError":
       res.status(400).json({ message: err.message });

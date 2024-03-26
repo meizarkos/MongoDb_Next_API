@@ -8,6 +8,6 @@ const utilisateursSchema = new mongoose.Schema({
   ban : {type: Boolean, required : false},
   role : {type: String, required: true},
   createdAt : {type: Date, default: Date.now},
-});
+})
 
 export const User = mongoose.model("users", utilisateursSchema);

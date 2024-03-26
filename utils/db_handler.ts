@@ -6,7 +6,7 @@ const host = "localhost"
 const port = "27017"
 const database = "my_db"
 
-const db = mongoose.connect(`mongodb://${username}:${password}@${host}:${port}/${database}`)
+const db = mongoose.connect(`mongodb://${username}:${password}@${host}:${port}/${database}`);
 
 export const startOfDatabase = async () => {
   db.then(() => {
