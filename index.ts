@@ -1,41 +1,32 @@
 import express from "express";
-import todoController from "./todo/controller";
-import authController from "./auth/controller";
-import userController from "./users/controller";
-import logsMiddleware from "./utils/logsHandler";
 import bodyParser from "body-parser";
 import jwt from "jwt-express";
-import errorHandler from "./utils/errorHandler";
-import { getConfig } from "./utils/configHandler";
-//import { connectDatabase } from "./utils/dbHandler";
-import mongoose from "mongoose";
+import { startOfDatabase } from "./utils/db_handler";
+import { routerArtistes } from "./artistes/route";
+import { errorHandler } from "./utils/error_handler";
+import { keyToken } from "./utils/jwt";
 
-const username = "root"
-const password = "root";
-const host = "localhost";
-const port = 27017;
-const database = "test";
-mongoose.connect(
-  `mongodb://${username}:${password}@${host}:${port}`,
-);
+startOfDatabase();
 
 const app = express();
 
 app.use(bodyParser.json());
-app.use(logsMiddleware);
 app.use(
-  jwt.init("secret", {
+  jwt.init(keyToken, {
     cookies: false,
   }),
 );
 
 app.get("/", (_req, res) => {
-  res.json({ message: "Hello world!" });
+  res.json({ message: "The API is working"});
 });
 
-app.use("/todos", todoController);
-app.use("/users", userController);
-app.use("/auth", authController);
+
+app.use(routerArtistes);
+
+app.use((_req, res) => {
+  res.status(404).json({ message: "This route does not exist" });
+});
 
 app.use(errorHandler);
 

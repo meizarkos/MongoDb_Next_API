@@ -1,12 +1,12 @@
 import mongoose from "mongoose";
 
-const username = "anon"
-const password = "marbleCake"
+const username = "alexis"
+const password = "alexis"
 const host = "localhost"
 const port = "27017"
 const database = "my_db"
 
-const db = mongoose.connect(`mongodb://${username}:${password}@${host}:${port}/${database}`).then(()=>{console.log("Lancé")});
+const db = mongoose.connect(`mongodb://${username}:${password}@${host}:${port}/${database}`)
 
 export const startOfDatabase = async () => {
   db.then(() => {

@@ -1,18 +1,13 @@
-import joi from "joi";
+import mongoose from "mongoose";
 
-export interface IUser {
-  id?: number;
-  username: string;
-  password: string;
-  role: "user" | "admin" | "staff";
-}
-
-export const UserSchema = joi.object({
-  username: joi.string().alphanum().min(3).required(),
-  password: joi.string().min(5).required(),
-  role: joi.string().regex(/user|admin|staff/).required(),
+const utilisateursSchema = new mongoose.Schema({
+  email: {type: String, required: true,unique: true},
+  password: {type: String, required: true},
+  salt : {type: String, required: true},
+  pseudo : {type: String, required: false,unique: true},
+  ban : {type: Boolean, required : false},
+  role : {type: String, required: true},
+  createdAt : {type: Date, default: Date.now},
 });
 
-export const UpdateUserSchema = joi.object({
-  password: joi.string().min(5).required(),
-});
+export const User = mongoose.model("users", utilisateursSchema);
