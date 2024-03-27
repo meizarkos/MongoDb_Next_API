@@ -85,7 +85,7 @@ routerArtistes.patch("/artistes/:ArtisteId", jwt.active(),(req:Request, res:Resp
 
 const upload = multer({ storage: multer.memoryStorage()})
 
-routerArtistes.post("/maquette/:ArtisteId", jwt.active(),(req:Request, res:Response,next:NextFunction)=>roleHandler(allowed,req,res,next),upload.single('image'),async (req:Request, res:Response) => {
+routerArtistes.post("/maquette/:ArtisteId", jwt.active(),(req:Request, res:Response,next:NextFunction)=>roleHandler(["artistes"],req,res,next),upload.single('image'),async (req:Request, res:Response) => {
   const idArtiste = req.params.ArtisteId
 
   const title = req.body.title
@@ -106,16 +106,14 @@ routerArtistes.post("/maquette/:ArtisteId", jwt.active(),(req:Request, res:Respo
     id_user:idArtiste,
     data:req.file.buffer,
     contentType:req.file.mimetype,
-    title:title
+    title:title,
+    name:req.file.originalname
   })
 
   await maquette.save()
 
   return res.status(200).json({message:"Maquette uploaded"})
 })
-
-
-
 
 routerArtistes.get("/maquette/:ArtisteId", jwt.active(),(req:Request, res:Response,next:NextFunction)=>roleHandler(allowed,req,res,next),async (req:Request, res:Response) => {
   const idArtiste = req.params.ArtisteId
@@ -126,22 +124,15 @@ routerArtistes.get("/maquette/:ArtisteId", jwt.active(),(req:Request, res:Respon
 
   const maquettes = await Maquette.find({id_user:idArtiste}).select('-__v -data')
 
-  const typeReturn = maquettes.map(maquette => {
-    return {
-      id:maquette._id,
-      data:maquette.contentType,
-      title:maquette.title,
-      createdAt:maquette.createdAt
-    }
-  })
+  if(!maquettes){
+    return res.status(404).json({message:"No maquette found"})
+  }
 
-  return res.status(200).json(typeReturn)
+  return res.status(200).json(maquettes)
 })
 
 routerArtistes.get("/maquetteImage/:id", jwt.active(),async (req, res) => {
   const maquette = await Maquette.findOne({_id:req.params.id}).select('-__v')
-
-  const auteur = await User.findOne({_id:req.params.ArtisteId}).select('-password -salt -__v')
 
   if(!maquette){
     return res.status(404).json({message:"Maquette not found"})

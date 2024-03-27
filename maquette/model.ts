@@ -5,6 +5,7 @@ const maquetteSchema = new mongoose.Schema({
   data: {type:Buffer, required: true},
   contentType: {type:String, required: true},
   title: {type:String, required: true},
+  name: {type:String, required: true},
   voteNumber: {type: Number, default: 0},
   createdAt : {type: Date, default: Date.now},
 });
