@@ -4,7 +4,7 @@ const username = "alexis"
 const password = "alexis"
 const host = "localhost"
 const port = "27017"
-const database = "my_db"
+const database = "Univ-express"
 
 const db = mongoose.connect(`mongodb://${username}:${password}@${host}:${port}/${database}`);
 

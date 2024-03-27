@@ -5,8 +5,9 @@ db.createUser(
       roles: [
           {
               role: "readWrite",
-              db: "my_db"
+              db: "Univ-express"
           }
       ]
   }
 );
+db.createCollection("users");
