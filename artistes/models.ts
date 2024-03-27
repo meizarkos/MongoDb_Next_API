@@ -7,6 +7,6 @@ export const validatorArtiste = joi.object({
 });
 
 export const validatorArtisteUpdate = joi.object({
-  email: joi.string().email().max(128).min(3).optional().description("L'email est obligatoire"),
-  pseudo: joi.string().max(128).optional().description("Le pseudo est trop long"),
+  email: joi.string().email().max(128).min(3).optional().description("L'email est trop long"),
+  pseudo: joi.string().min(3).max(128).optional().description("Le pseudo est trop long"),
 });

@@ -11,7 +11,6 @@ export function errorHandler(
   }
 
   console.log(err.message)
-  // console.log(err.name.includes("pseudo"))
 
   switch (err.name) {
     case "ValidationError":

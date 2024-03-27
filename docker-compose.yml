@@ -12,9 +12,9 @@ services:
       - ./data:/data/db
       - ./init-mongo.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
     environment:
-      MONGO_INITDB_ROOT_USERNAME: alexis
-      MONGO_INITDB_ROOT_PASSWORD: alexis
-      MONGO_INITDB_DATABASE: my_db
+      MONGO_INITDB_USERNAME: alexis
+      MONGO_INITDB_PASSWORD: alexis
+      MONGO_INITDB_DATABASE: univ_express
 
   mongoku:
     image: huggingface/mongoku
