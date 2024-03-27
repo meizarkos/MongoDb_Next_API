@@ -10,6 +10,8 @@ export function errorHandler(
     next();
   }
 
+  console.log(err.message)
+
   switch (err.name) {
     case "ValidationError":
       res.status(400).json({ message: err.message });
