@@ -1,16 +1,9 @@
 import { Router } from "express";
 import { validatorArtiste, validatorArtisteUpdate } from "./models";
 import { User } from "../users/model";
+import {keyToken} from "../utils/jwt";
 import bcrypt from "bcrypt";
-
-async function pseudoNotUnique(pseudo:string){
-  const user = await User.findOne({pseudo:pseudo}).select('-password -salt -__v')
-  if(user){
-    return true
-  }
-  return false
-}
-
+import jwt from "jwt-express";
 
 export const routerArtistes = Router();
 
@@ -28,13 +21,6 @@ routerArtistes.post("/register", async (req, res) => {
   value.role = "artiste"
   value.ban = false
 
-  if(value.pseudo !== undefined){
-    const user = await pseudoNotUnique(value.pseudo)
-    if(user){
-      return res.status(400).json({ message: "This pseudo is already used." });
-    }
-  }
-
   await new User(value).save()
 
   User.findOne({email:value.email}).select('-password -salt -__v').then(artiste => {
@@ -50,7 +36,7 @@ routerArtistes.post("/register", async (req, res) => {
   })
 });
 
-routerArtistes.patch("/artistes", async (req, res) => {
+routerArtistes.patch("/artistes", jwt.active(),async (req, res) => {
   const { error,value } = validatorArtisteUpdate.validate(req.body);
 
   if (error) {
@@ -58,7 +44,19 @@ routerArtistes.patch("/artistes", async (req, res) => {
     return;
   }
 
-  User.findOneAndUpdate({email:value.email},value).then(artiste => {
+  const idArtiste = req.jwt.payload.userId
+
+  if(!idArtiste){
+    return res.status(403).json({message:"You aren't connected"})
+  }
+
+  const artiste = await User.findOne({_id:idArtiste}).select('-password -salt -__v')
+
+  if(!artiste){
+    return res.status(500).json({message:"Something went wrong"})
+  }
+
+  User.findOneAndUpdate({email:artiste.email},value).select('-password -salt -__v').then(artiste => {
     if (artiste) {
       return res.status(200).json({ message: "Artiste updated"});
     } else {

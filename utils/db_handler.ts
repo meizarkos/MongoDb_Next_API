@@ -4,9 +4,9 @@ const username = "alexis"
 const password = "alexis"
 const host = "localhost"
 const port = "27017"
-const database = "Univ-express"
+const database = "univ-express"
 
-const db = mongoose.connect(`mongodb://${username}:${password}@${host}:${port}/${database}`);
+const db = mongoose.connect(`mongodb://${host}:${port}/${database}`);
 
 export const startOfDatabase = async () => {
   db.then(() => {

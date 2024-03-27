@@ -14,7 +14,7 @@ services:
     environment:
       MONGO_INITDB_USERNAME: alexis
       MONGO_INITDB_PASSWORD: alexis
-      MONGO_INITDB_DATABASE: Univ-express
+      MONGO_INITDB_DATABASE: univ_express
 
   mongoku:
     image: huggingface/mongoku

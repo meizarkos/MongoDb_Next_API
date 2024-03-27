@@ -10,4 +10,15 @@ const utilisateursSchema = new mongoose.Schema({
   createdAt : {type: Date, default: Date.now},
 })
 
+utilisateursSchema.path('pseudo').validate(async function(value) {
+  if (!value) return true;
+  const user = await mongoose.model("users").findOne({ pseudo: value });
+  if(user){
+    return false
+  } 
+  else{
+    return true
+  }
+},"Pseudo already exist, try another one")
+
 export const User = mongoose.model("users", utilisateursSchema);
