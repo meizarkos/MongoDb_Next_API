@@ -7,7 +7,7 @@ import multer from "multer";
 import bcrypt from "bcrypt";
 import jwt from "jwt-express";
 
-const allowed = ["artiste"]
+const allowed = ["artiste","admin"]
 
 export const routerArtistes = Router();
 
@@ -43,17 +43,16 @@ routerArtistes.post("/register",async (req, res) => {
   User.findOne({email:value.email}).select('-password -salt -__v').then(artiste => {
     if (artiste) {
       const token = res.jwt({
-        userId: artiste._id.toString(),
-        role: "a",
+        role: artiste.role,
       })
-      return res.status(200).json({ message: "Artiste created", token:token.token });
+      return res.status(200).json({ message: "Artiste created", token:token.token, id:artiste._id });
     } else {
       return res.status(500).json({ message: "Something unexpected happend" });
     }
   })
 });
 
-routerArtistes.patch("/artistes", jwt.active(),(req:Request, res:Response,next:NextFunction)=>roleHandler(allowed,req,res,next),async (req:Request, res:Response) => {
+routerArtistes.patch("/artistes/:ArtisteId", jwt.active(),(req:Request, res:Response,next:NextFunction)=>roleHandler(allowed,req,res,next),async (req:Request, res:Response) => {
   const { error,value } = validatorArtisteUpdate.validate(req.body);
 
   if (error) {
@@ -61,7 +60,7 @@ routerArtistes.patch("/artistes", jwt.active(),(req:Request, res:Response,next:N
     return;
   }
 
-  const idArtiste = req.jwt.payload.userId
+  const idArtiste = req.params.ArtisteId
 
   if(!idArtiste){
     return res.status(403).json({message:"You aren't connected"})
@@ -86,9 +85,9 @@ routerArtistes.patch("/artistes", jwt.active(),(req:Request, res:Response,next:N
 
 const upload = multer({ storage: multer.memoryStorage()})
 
-routerArtistes.post("/maquette", jwt.active(),(req:Request, res:Response,next:NextFunction)=>roleHandler(allowed,req,res,next),upload.single('image'),async (req:Request, res:Response) => {
-  const idArtiste = req.jwt.payload.userId
-  
+routerArtistes.post("/maquette/:ArtisteId", jwt.active(),(req:Request, res:Response,next:NextFunction)=>roleHandler(allowed,req,res,next),upload.single('image'),async (req:Request, res:Response) => {
+  const idArtiste = req.params.ArtisteId
+
   const title = req.body.title
 
   if(!title){
@@ -118,8 +117,8 @@ routerArtistes.post("/maquette", jwt.active(),(req:Request, res:Response,next:Ne
 
 
 
-routerArtistes.get("/maquette", jwt.active(),(req:Request, res:Response,next:NextFunction)=>roleHandler(allowed,req,res,next),async (req:Request, res:Response) => {
-  const idArtiste = req.jwt.payload.userId
+routerArtistes.get("/maquette/:ArtisteId", jwt.active(),(req:Request, res:Response,next:NextFunction)=>roleHandler(allowed,req,res,next),async (req:Request, res:Response) => {
+  const idArtiste = req.params.ArtisteId
 
   if(!idArtiste){
     return res.status(403).json({message:"You aren't connected"})
@@ -139,14 +138,10 @@ routerArtistes.get("/maquette", jwt.active(),(req:Request, res:Response,next:Nex
   return res.status(200).json(typeReturn)
 })
 
-routerArtistes.get("/maquette/:id", jwt.active(),async (req, res) => {
-  const idArtiste = req.jwt.payload.userId
+routerArtistes.get("/maquetteImage/:id", jwt.active(),async (req, res) => {
+  const maquette = await Maquette.findOne({_id:req.params.id}).select('-__v')
 
-  if(!idArtiste){
-    return res.status(403).json({message:"You aren't connected"})
-  }
-
-  const maquette = await Maquette.findOne({_id:req.params.id,id_user:idArtiste}).select('-__v')
+  const auteur = await User.findOne({_id:req.params.ArtisteId}).select('-password -salt -__v')
 
   if(!maquette){
     return res.status(404).json({message:"Maquette not found"})
