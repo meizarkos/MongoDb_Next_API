@@ -3,6 +3,7 @@ import bodyParser from "body-parser";
 import jwt from "jwt-express";
 import { startOfDatabase } from "./utils/db_handler";
 import { routerArtistes } from "./artistes/route";
+import { routerManager } from "./manager/route";
 import { errorHandler } from "./utils/error_handler";
 import { keyToken } from "./utils/jwt";
 
@@ -23,6 +24,7 @@ app.get("/", (_req, res) => {
 
 
 app.use(routerArtistes);
+app.use(routerManager);
 
 app.use((_req, res) => {
   res.status(404).json({ message: "This route does not exist" });
