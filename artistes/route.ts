@@ -85,7 +85,7 @@ routerArtistes.patch("/artistes/:ArtisteId", jwt.active(),(req:Request, res:Resp
 
 const upload = multer({ storage: multer.memoryStorage()})
 
-routerArtistes.post("/maquette/:ArtisteId", jwt.active(),(req:Request, res:Response,next:NextFunction)=>roleHandler(["artistes"],req,res,next),upload.single('image'),async (req:Request, res:Response) => {
+routerArtistes.post("/maquette/:ArtisteId", jwt.active(),(req:Request, res:Response,next:NextFunction)=>roleHandler(["artiste"],req,res,next),upload.single('image'),async (req:Request, res:Response) => {
   const idArtiste = req.params.ArtisteId
 
   const title = req.body.title
