@@ -7,6 +7,14 @@ import multer from "multer";
 import bcrypt from "bcrypt";
 import jwt from "jwt-express";
 
+type Artiste = {
+  email: string;
+  role: string;
+  pseudo: string;
+  ban: boolean;
+  createdAt: Date;
+}
+
 const allowed = ["artiste","admin"]
 
 export const routerArtistes = Router();
@@ -85,9 +93,8 @@ routerArtistes.patch("/artistes/:ArtisteId", jwt.active(),(req:Request, res:Resp
 
 const upload = multer({ storage: multer.memoryStorage()})
 
-routerArtistes.post("/maquette/:ArtisteId", jwt.active(),(req:Request, res:Response,next:NextFunction)=>roleHandler(["artistes"],req,res,next),upload.single('image'),async (req:Request, res:Response) => {
+routerArtistes.post("/maquette/:ArtisteId", jwt.active(),(req:Request, res:Response,next:NextFunction)=>roleHandler(["artiste"],req,res,next),upload.single('image'),async (req:Request, res:Response) => {
   const idArtiste = req.params.ArtisteId
-
   const title = req.body.title
 
   if(!title){
@@ -100,6 +107,15 @@ routerArtistes.post("/maquette/:ArtisteId", jwt.active(),(req:Request, res:Respo
 
   if(!req.file){
     return res.status(400).json({message:"No file uploaded"})
+  }
+
+  const artiste:Artiste = await User.findOne({_id:idArtiste}).select('-password -salt -__v')
+  if(!artiste){
+    return res.status(500).json({message:"Something went wrong"})
+  }
+  
+  if(artiste.ban){
+    return res.status(403).json({message:"You are banned"})
   }
 
   const maquette = new Maquette({
@@ -131,8 +147,8 @@ routerArtistes.get("/maquette/:ArtisteId", jwt.active(),(req:Request, res:Respon
   return res.status(200).json(maquettes)
 })
 
-routerArtistes.get("/maquetteImage/:id", jwt.active(),async (req, res) => {
-  const maquette = await Maquette.findOne({_id:req.params.id}).select('-__v')
+routerArtistes.get("/maquetteImage/:idArtiste/:idMaquette", jwt.active(),(req:Request,res:Response,next:NextFunction)=>roleHandler(allowed,req,res,next),async (req, res) => {
+  const maquette = await Maquette.findOne({_id:req.params.idMaquette,id_user:req.params.idArtiste}).select('-__v')
 
   if(!maquette){
     return res.status(404).json({message:"Maquette not found"})
