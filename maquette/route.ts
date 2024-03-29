@@ -1,13 +1,14 @@
-import { Router } from "express"
+import { Request,Response,NextFunction,Router } from "express"
 import jwt from "jwt-express"
 import { Maquette } from "./model"
 import { Approbations } from "../approbation/model"
 import { User } from "../users/model"
+import { roleHandler } from "../utils/role_handler"
 
 
 export const routerMaquette  = Router()
 
-routerMaquette.get("/allMaquette/:id",jwt.active(),async(req,res)=>{
+routerMaquette.get("/allMaquette/:id",jwt.active(),(req:Request,res:Response,next:NextFunction)=>roleHandler(["admin","manager"],req,res,next),async(req,res)=>{
     const id_maquette = req.params.id
 
     const maquette = await Maquette.findOne({_id:id_maquette}).select("-__v -data -contentType")

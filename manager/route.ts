@@ -1,12 +1,14 @@
-import { Router } from 'express';
+import { Request,Response,NextFunction, Router } from 'express';
 import { validatorApprobation } from './model';
 import { Maquette } from '../maquette/model';
 import { User } from '../users/model';
 import { Approbations } from '../approbation/model';
+import { roleHandler } from '../utils/role_handler';
+import jwt from "jwt-express"
 
 export const routerManager = Router();
 
-routerManager.get("/allMaquette", async(req, res) => {
+routerManager.get("/allMaquette",jwt.active(),(req:Request,res:Response,next:NextFunction)=>roleHandler(["manager","admin"],req,res,next), async(_req, res) => {
   const maquettes = await Maquette.find().select('-__v -data -contentType -user_id');
   const response = await Promise.all(maquettes.map(async maquette => {
     const auteur = await User.findOne({_id: maquette.id_user}).select('-password -salt -__v');
@@ -15,6 +17,7 @@ routerManager.get("/allMaquette", async(req, res) => {
       id_maquette: maquette._id,
       title: maquette.title,
       name: maquette.name,
+      validation : maquette.validation,
       auteur: auteur
     }
     return maquetteToReturn;
@@ -24,7 +27,20 @@ routerManager.get("/allMaquette", async(req, res) => {
 });
 
 
-routerManager.post("/avis/:managerId/:maquetteId",async(req,res)=>{
+routerManager.get("/maquetteImage/:idMaquette", jwt.active(),(req:Request,res:Response,next:NextFunction)=>roleHandler(["admin","manager"],req,res,next),async (req, res) => {
+    const maquette = await Maquette.findOne({_id:req.params.idMaquette}).select('-__v')
+  
+    if(!maquette){
+      return res.status(404).json({message:"Maquette not found"})
+    }
+  
+    res.setHeader('Content-Type', maquette.contentType)
+  
+    return res.send(maquette.data)
+  })
+
+
+routerManager.post("/avis/:managerId/:maquetteId",jwt.active(),(req:Request,res:Response,next:NextFunction)=>roleHandler(["admin","manager"],req,res,next),async(req,res)=>{
     const {error,value} = validatorApprobation.validate(req.body)
 
     if(error){
@@ -45,7 +61,7 @@ routerManager.post("/avis/:managerId/:maquetteId",async(req,res)=>{
 
     if(maquette.voteNumber>=5){
         if(maquette.validation){
-            res.status(200).json({ message: `La maquette a été validé`})
+            res.status(200).json({ message: `La maquette est déjà validé`})
             return
         }
         res.status(200).json({message:"La maquette est déjà refusé"})
@@ -77,10 +93,13 @@ routerManager.post("/avis/:managerId/:maquetteId",async(req,res)=>{
         }
     }
 
-    Maquette.updateOne({ _id: id_maquette }, { $set: { voteNumber: maquette.voteNumber,validation:maquette.validation } })  
+    await Maquette.updateOne({ _id: id_maquette }, { $set: { voteNumber: maquette.voteNumber,validation:maquette.validation } })  
+
+    Maquette.findOne({_id: id_maquette}).then(maquette=>console.log(maquette))
 
     value.id_user = id_user
     value.id_maquette = id_maquette
 
     await new Approbations(value).save()
+    return res.status(200).json({message:"Avis ajouté avec succès"})
 })

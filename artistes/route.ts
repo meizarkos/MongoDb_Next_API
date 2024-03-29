@@ -147,8 +147,8 @@ routerArtistes.get("/maquette/:ArtisteId", jwt.active(),(req:Request, res:Respon
   return res.status(200).json(maquettes)
 })
 
-routerArtistes.get("/maquetteImage/:id", jwt.active(),async (req, res) => {
-  const maquette = await Maquette.findOne({_id:req.params.id}).select('-__v')
+routerArtistes.get("/maquetteImage/:idArtiste/:idMaquette", jwt.active(),(req:Request,res:Response,next:NextFunction)=>roleHandler(allowed,req,res,next),async (req, res) => {
+  const maquette = await Maquette.findOne({_id:req.params.idMaquette,id_user:req.params.idArtiste}).select('-__v')
 
   if(!maquette){
     return res.status(404).json({message:"Maquette not found"})
