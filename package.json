@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.ts",
   "scripts": {
-    "start": "nodemon --watch .",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "nodemon --watch .",
+    "start":"tsc --outDir dist && node dist/index.js"
   },
   "author": "",
   "license": "ISC",
