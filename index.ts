@@ -5,6 +5,7 @@ import { startOfDatabase } from "./utils/db_handler";
 import { routerArtistes } from "./artistes/route";
 import { routerMaquette } from "./maquette/route";
 import { routerManager } from "./manager/route";
+import { routerUsers } from "./users/route";
 import { errorHandler } from "./utils/error_handler";
 import { keyToken } from "./utils/jwt";
 
@@ -28,6 +29,7 @@ app.get("/", (_req, res) => {
 app.use(routerArtistes);
 app.use(routerManager);
 app.use(routerMaquette);
+app.use(routerUsers);
 
 
 app.use((_req, res) => {

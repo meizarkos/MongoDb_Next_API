@@ -1,7 +1,6 @@
 import { Router, Request, Response } from "express";
 import { User } from "./model";
 import bcrypt from "bcrypt";
-import JWT from "jwt-express"; 
 import jwt from "jsonwebtoken";
 
 export const routerUsers = Router();
@@ -13,10 +12,6 @@ type Artiste = {
   ban: boolean;
   createdAt: Date;
 }
-
-routerUsers.use(JWT.init(process.env.JWT_SECRET!, {
-  cookies: false, 
-}));
 
 const isAdmin = async (req: any, res: Response, next: Function) => {
   try {
@@ -37,14 +32,14 @@ routerUsers.patch("/banArtiste/:id", isAdmin, async (req, res) => {
     const artist = await User.findById(req.params.id) as Artiste;
 
     if (artist) {
-      artist.ban = false;
+      artist.ban = true;
       await User.findByIdAndUpdate(req.params.id, artist);
-      res.send({ message: "Artiste banni avec succès" });
+      res.status(200).json({ message: "Artiste banni avec succès" });
     } else {
       res.status(404).send({ message: "Artiste non trouvé" });
     }
   } catch (error) {
-    res.status(500).send({ message: "Erreur lors du bannissement de l'artiste" });
+    res.status(500).send({ message: "Cette id est incorrecte"});
   }
 });
 
