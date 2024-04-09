@@ -6,6 +6,14 @@ import jwt from "jsonwebtoken";
 
 export const routerUsers = Router();
 
+type Artiste = {
+  email: string;
+  role: string;
+  pseudo: string;
+  ban: boolean;
+  createdAt: Date;
+}
+
 routerUsers.use(JWT.init(process.env.JWT_SECRET!, {
   cookies: false, 
 }));
@@ -24,20 +32,19 @@ const isAdmin = async (req: any, res: Response, next: Function) => {
   }
 };
 
-routerUsers.put("/banArtiste/:id", isAdmin, async (req, res) => {
+routerUsers.patch("/banArtiste/:id", isAdmin, async (req, res) => {
   try {
-    const { id } = req.params;
-    const user = await User.findById(id);
+    const artist = await User.findById(req.params.id) as Artiste;
 
-    if (!user) {
-      return res.status(404).send({ message: "Utilisateur non trouvé" });
+    if (artist) {
+      artist.ban = false;
+      await User.findByIdAndUpdate(req.params.id, artist);
+      res.send({ message: "Artiste banni avec succès" });
+    } else {
+      res.status(404).send({ message: "Artiste non trouvé" });
     }
-
-    user.ban = true;
-    await user.save();
-    res.send({ message: "L'artiste a été banni avec succès" });
   } catch (error) {
-    res.status(500).send({ message: "Erreur lors de la mise à jour de l'utilisateur" });
+    res.status(500).send({ message: "Erreur lors du bannissement de l'artiste" });
   }
 });
 

@@ -6,7 +6,6 @@ const utilisateursSchema = new mongoose.Schema({
   salt: { type: String, required: true },
   role: { type: String, required: true },
   createdAt: { type: Date, default: Date.now },
-  ban: { type: Boolean, default: false } 
 }, { strict: false });
 
 
