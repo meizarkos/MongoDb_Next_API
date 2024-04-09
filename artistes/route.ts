@@ -74,18 +74,27 @@ routerArtistes.patch("/artistes/:ArtisteId", jwt.active(),(req:Request, res:Resp
     return res.status(403).json({message:"You aren't connected"})
   }
 
-  const artiste = await User.findOne({_id:idArtiste}).select('-password -salt -__v')
+  const artiste = await User.findOne({_id:idArtiste}).select('-password -salt -__v') 
 
   if(!artiste){
     return res.status(500).json({message:"Something went wrong"})
   }
 
+  const uniquePseudo = await handleUniquePseudo(value.pseudo);
+
+  if(!uniquePseudo){
+    return res.status(400).json({message:"Pseudo already taken"})
+  }
+
   User.findOneAndUpdate({email:artiste.email},value).select('-password -salt -__v').then(artiste => {
     if (artiste) {
-      return res.status(200).json({ message: "Artiste updated"});
+      return res.status(200).json({ message: "Artiste updated",artiste});
     } else {
       return res.status(500).json({ message: "Something unexpected happend" });
     }
+  })
+  .catch(err => {
+    return res.status(500).json({ message: err.message});
   })
 })
 
