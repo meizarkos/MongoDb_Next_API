@@ -43,6 +43,22 @@ routerUsers.patch("/banArtiste/:id", isAdmin, async (req, res) => {
   }
 });
 
+routerUsers.patch("/debanArtiste/:id", isAdmin, async (req, res) => {
+  try {
+    const artist = await User.findById(req.params.id) as Artiste;
+
+    if (artist) {
+      artist.ban = false;
+      await User.findByIdAndUpdate(req.params.id, artist);
+      res.status(200).json({ message: "Artiste banni avec succès" });
+    } else {
+      res.status(404).json({ message: "Artiste non trouvé" });
+    }
+  } catch (error) {
+    res.status(500).json({ message: "Erreur lors du bannissement de l'artiste" });
+  }
+});
+
 routerUsers.delete("/user/:id", isAdmin, async (req, res) => {
   try {
     await User.findByIdAndDelete(req.params.id);
@@ -61,7 +77,7 @@ routerUsers.post("/login", async (req, res) => {
       return res.status(401).json({ message: "Email ou mot de passe incorrect" });
     }
 
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET!, { expiresIn: '2h' });
+    const token = res.jwt({role: user.role})
     res.status(200).json({ token });
   } catch (error) {
     res.status(500).json({ message: "Erreur lors de la connexion" });
