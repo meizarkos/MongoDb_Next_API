@@ -17,14 +17,14 @@ async function createDefaultAdmin() {
 
     if (!adminExists) {
         const adminPassword = "defaultAdminPassword"; 
-        const hashedPassword = await bcrypt.hash(adminPassword, 10);
+        const salt = await bcrypt.genSalt(10)
+        const hashedPassword = await bcrypt.hash(adminPassword, salt);
 
         const adminUser = new User({
             email: "admin@example.com",
             password: hashedPassword,
+            salt: salt,
             role: "admin",
-            pseudo: "admin",
-            ban: false,
             createdAt: new Date()
         });
 
