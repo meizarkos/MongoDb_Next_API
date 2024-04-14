@@ -26,6 +26,38 @@ const isAdmin = async (req: any, res: Response, next: Function) => {
   }
 };
 
+routerUsers.patch("/changePassword", isAdmin, async (req: Request, res: Response) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+    if (!oldPassword || !newPassword) {
+      return res.status(400).json({ message: "Ancien mot de passe et nouveau mot de passe sont requis." });
+    }
+
+    const user = await User.findById(req.jwt.payload.id);
+
+    if (!user) {
+      return res.status(404).json({ message: "Utilisateur non trouvé." });
+    }
+
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Ancien mot de passe incorrect." });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    user.password = hashedPassword;
+    user.salt = salt; 
+    await user.save();
+
+    res.status(200).json({ message: "Mot de passe mis à jour avec succès." });
+  } catch (error) {
+    res.status(500).json({ message: "Erreur lors de la mise à jour du mot de passe." });
+  }
+});
+
+
 routerUsers.patch("/banArtiste/:id", isAdmin, async (req, res) => {
   try {
     const artist = await User.findById(req.params.id) as Artiste;

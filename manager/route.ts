@@ -5,6 +5,8 @@ import { User } from '../users/model';
 import { Approbations } from '../approbation/model';
 import { roleHandler } from '../utils/role_handler';
 import jwt from "jwt-express"
+import bcrypt from "bcrypt";
+
 
 export const routerManager = Router();
 
@@ -103,3 +105,38 @@ routerManager.post("/avis/:managerId/:maquetteId",jwt.active(),(req:Request,res:
     await new Approbations(value).save()
     return res.status(200).json({message:"Avis ajouté avec succès"})
 })
+
+
+routerManager.post("/addManager", jwt.active(), (req: Request, res: Response, next: NextFunction) => roleHandler(["admin"], req, res, next), async (req, res) => {
+    try {
+      const { email, pseudo } = req.body;
+      if (!email || !pseudo) {
+        return res.status(400).json({ message: "Email et pseudo sont requis." });
+      }
+  
+      const existingUser = await User.findOne({ email });
+      if (existingUser) {
+        return res.status(409).json({ message: "Un utilisateur avec cet email existe déjà." });
+      }
+  
+      const password = "defaultPassword"; 
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
+  
+      const newUser = new User({
+        email,
+        password: hashedPassword,
+        salt, 
+        role: "manager",
+        pseudo,
+        createdAt: new Date()
+      });
+  
+      await newUser.save();
+  
+      res.status(201).json({ message: "Manager ajouté avec succès." });
+    } catch (error) {
+      res.status(500).json({ message: "Erreur lors de l'ajout du manager." });
+    }
+  });
+  
