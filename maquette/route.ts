@@ -9,7 +9,7 @@ import { roleHandler } from "../utils/role_handler"
 export const routerMaquette  = Router()
 
 routerMaquette.get("/allMaquette/:id",jwt.active(),(req:Request,res:Response,next:NextFunction)=>roleHandler(["admin","manager"],req,res,next),async(req,res)=>{
-    const id_maquette = req.params.id
+    const id_maquette = req.params.id_maquette
 
     const maquette = await Maquette.findOne({_id:id_maquette}).select("-__v -data -contentType")
 
