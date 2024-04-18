@@ -58,13 +58,13 @@ routerUsers.patch("/changePassword", isAdmin, async (req: Request, res: Response
 });
 
 
-routerUsers.patch("/banArtiste/:id", isAdmin, async (req, res) => {
+routerUsers.patch("/banArtiste/:id",isAdmin, async (req, res) => {
   try {
     const artist = await User.findById(req.params.id) as Artiste;
 
     if (artist) {
-      artist.ban = true;
-      await User.findByIdAndUpdate(req.params.id, artist);
+      const update = { ban: true }
+      await User.findByIdAndUpdate(req.params.id, update);
       res.status(200).json({ message: "Artiste banni avec succès" });
     } else {
       res.status(404).json({ message: "Artiste non trouvé" });
@@ -79,8 +79,8 @@ routerUsers.patch("/debanArtiste/:id", isAdmin, async (req, res) => {
     const artist = await User.findById(req.params.id) as Artiste;
 
     if (artist) {
-      artist.ban = false;
-      await User.findByIdAndUpdate(req.params.id, artist);
+      const update = { ban: false }
+      await User.findByIdAndUpdate(req.params.id, update);
       res.status(200).json({ message: "Artiste banni avec succès" });
     } else {
       res.status(404).json({ message: "Artiste non trouvé" });
