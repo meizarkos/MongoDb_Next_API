@@ -111,11 +111,14 @@ routerUsers.post("/login", async (req, res) => {
     }
     if(user){
       const token = res.jwt({role: user.role, id: user._id})
-      res.status(200).json({ token:token.token, id:user._id });
+      return res.status(200).json({ token:token.token, id:user._id });
+    }
+    else{
+      return res.status(404).json({ message: "Utilisateur non trouvé" });
     }
 
     
   } catch (error) {
-    res.status(500).json({ message: "Erreur lors de la connexion" });
+    return res.status(500).json({ message: "Erreur lors de la connexion" });
   }
 });
