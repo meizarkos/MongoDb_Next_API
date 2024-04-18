@@ -104,7 +104,7 @@ routerUsers.post("/login", async (req, res) => {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
 
-    if(req.jwt.payload.role=="admin"){
+    if(user && user.role==="admin"){
       if (!user || !(await bcrypt.compare(password, user.password))) {
         return res.status(401).json({ message: "Email ou mot de passe incorrect" });
       }
