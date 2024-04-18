@@ -93,7 +93,7 @@ routerUsers.patch("/debanArtiste/:id", isAdmin, async (req, res) => {
 routerUsers.delete("/user/:id", isAdmin, async (req, res) => {
   try {
     await User.findByIdAndDelete(req.params.id);
-    res.json({ message: "Utilisateur supprimé avec succès" });
+    res.status(201).json({ message: "Utilisateur supprimé avec succès" });
   } catch (error) {
     res.status(500).json({ message: "Erreur lors de la suppression de l'utilisateur" });
   }
