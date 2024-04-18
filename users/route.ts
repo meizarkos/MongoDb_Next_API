@@ -111,7 +111,7 @@ routerUsers.post("/login", async (req, res) => {
     }
     if(user){
       const token = res.jwt({role: user.role, id: user._id})
-      res.status(200).json({ token });
+      res.status(200).json({ token:token.token, id:user._id });
     }
 
     
