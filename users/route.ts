@@ -108,7 +108,7 @@ routerUsers.post("/login", async (req, res) => {
       return res.status(401).json({ message: "Email ou mot de passe incorrect" });
     }
 
-    const token = res.jwt({role: user.role})
+    const token = res.jwt({role: user.role, id: user._id})
     res.status(200).json({ token });
   } catch (error) {
     res.status(500).json({ message: "Erreur lors de la connexion" });

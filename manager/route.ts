@@ -3,14 +3,14 @@ import { validatorApprobation } from './model';
 import { Maquette } from '../maquette/model';
 import { User } from '../users/model';
 import { Approbations } from '../approbation/model';
-import { roleHandler } from '../utils/role_handler';
+import { roleHandler,onlyRoleHandler } from '../utils/role_handler';
 import jwt from "jwt-express"
 import bcrypt from "bcrypt";
 
 
 export const routerManager = Router();
 
-routerManager.get("/allMaquette",jwt.active(),(req:Request,res:Response,next:NextFunction)=>roleHandler(["manager","admin"],req,res,next), async(_req, res) => {
+routerManager.get("/allMaquette",jwt.active(),onlyRoleHandler(["manager","admin"]), async(_req, res) => {
   const maquettes = await Maquette.find().select('-__v -data -contentType -user_id');
   const response = await Promise.all(maquettes.map(async maquette => {
     const auteur = await User.findOne({_id: maquette.id_user}).select('-password -salt -__v');
@@ -29,7 +29,7 @@ routerManager.get("/allMaquette",jwt.active(),(req:Request,res:Response,next:Nex
 });
 
 
-routerManager.get("/maquetteImage/:idMaquette", jwt.active(),(req:Request,res:Response,next:NextFunction)=>roleHandler(["admin","manager"],req,res,next),async (req, res) => {
+routerManager.get("/maquetteImage/:idMaquette", jwt.active(),onlyRoleHandler(["admin","manager"]),async (req, res) => {
     const maquette = await Maquette.findOne({_id:req.params.idMaquette}).select('-__v')
   
     if(!maquette){
@@ -42,7 +42,7 @@ routerManager.get("/maquetteImage/:idMaquette", jwt.active(),(req:Request,res:Re
   })
 
 
-routerManager.post("/avis/:managerId/:maquetteId",jwt.active(),(req:Request,res:Response,next:NextFunction)=>roleHandler(["admin","manager"],req,res,next),async(req,res)=>{
+routerManager.post("/avis/:id/:maquetteId",jwt.active(),roleHandler(["admin","manager"]),async(req,res)=>{
     const {error,value} = validatorApprobation.validate(req.body)
 
     if(error){
@@ -50,7 +50,7 @@ routerManager.post("/avis/:managerId/:maquetteId",jwt.active(),(req:Request,res:
         return;
     }
 
-    const id_user = req.params.managerId
+    const id_user = req.params.id
     const id_maquette = req.params.maquetteId
 
     const maquette = await Maquette.findOne({_id:id_maquette}).select("-__v -data -contentType")
@@ -107,10 +107,10 @@ routerManager.post("/avis/:managerId/:maquetteId",jwt.active(),(req:Request,res:
 })
 
 
-routerManager.post("/addManager", jwt.active(), (req: Request, res: Response, next: NextFunction) => roleHandler(["admin"], req, res, next), async (req, res) => {
+routerManager.post("/addManager", jwt.active(), roleHandler(["admin"]), async (req, res) => {
     try {
-      const { email, pseudo } = req.body;
-      if (!email || !pseudo) {
+      const { email, password} = req.body;
+      if (!email || !password) {
         return res.status(400).json({ message: "Email et pseudo sont requis." });
       }
   
@@ -118,8 +118,7 @@ routerManager.post("/addManager", jwt.active(), (req: Request, res: Response, ne
       if (existingUser) {
         return res.status(409).json({ message: "Un utilisateur avec cet email existe déjà." });
       }
-  
-      const password = "defaultPassword"; 
+   
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(password, salt);
   
@@ -128,7 +127,6 @@ routerManager.post("/addManager", jwt.active(), (req: Request, res: Response, ne
         password: hashedPassword,
         salt, 
         role: "manager",
-        pseudo,
         createdAt: new Date()
       });
   
