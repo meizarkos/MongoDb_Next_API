@@ -103,7 +103,10 @@ routerArtistes.patch("/artistes/:id", jwt.active(),roleHandler(allowed),async (r
 
 const upload = multer({ storage: multer.memoryStorage()})
 
-routerArtistes.post("/maquette/:id", jwt.active(),roleHandler(["artiste"]),upload.single('image'),async (req:Request, res:Response) => {
+routerArtistes.post("/maquette/:id", jwt.active(),upload.single('image'),async (req:Request, res:Response) => {
+  if(req.jwt.payload.role !== "artiste"){
+    return res.status(403).json({message:"You are not allowed to access this route"});
+  }
   const idArtiste = req.params.id
   const title = req.body.title
 

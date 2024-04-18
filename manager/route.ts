@@ -107,7 +107,7 @@ routerManager.post("/avis/:id/:maquetteId",jwt.active(),roleHandler(["admin","ma
 })
 
 
-routerManager.post("/addManager", jwt.active(), roleHandler(["admin"]), async (req, res) => {
+routerManager.post("/addManager", jwt.active(), onlyRoleHandler(["admin"]), async (req, res) => {
     try {
       const { email, password} = req.body;
       if (!email || !password) {

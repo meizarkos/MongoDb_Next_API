@@ -58,13 +58,13 @@ routerUsers.patch("/changePassword", isAdmin, async (req: Request, res: Response
 });
 
 
-routerUsers.patch("/banArtiste/:id", isAdmin, async (req, res) => {
+routerUsers.patch("/banArtiste/:id",isAdmin, async (req, res) => {
   try {
     const artist = await User.findById(req.params.id) as Artiste;
 
     if (artist) {
-      artist.ban = true;
-      await User.findByIdAndUpdate(req.params.id, artist);
+      const update = { ban: true }
+      await User.findByIdAndUpdate(req.params.id, update);
       res.status(200).json({ message: "Artiste banni avec succès" });
     } else {
       res.status(404).json({ message: "Artiste non trouvé" });
@@ -74,14 +74,14 @@ routerUsers.patch("/banArtiste/:id", isAdmin, async (req, res) => {
   }
 });
 
-routerUsers.patch("/debanArtiste/:id", isAdmin, async (req, res) => {
+routerUsers.patch("/debanArtiste/:id",isAdmin, async (req, res) => {
   try {
     const artist = await User.findById(req.params.id) as Artiste;
 
     if (artist) {
-      artist.ban = false;
-      await User.findByIdAndUpdate(req.params.id, artist);
-      res.status(200).json({ message: "Artiste banni avec succès" });
+      const update = { ban: false }
+      await User.findByIdAndUpdate(req.params.id, update);
+      res.status(200).json({ message: "Artiste débanni avec succès" });
     } else {
       res.status(404).json({ message: "Artiste non trouvé" });
     }
@@ -93,7 +93,7 @@ routerUsers.patch("/debanArtiste/:id", isAdmin, async (req, res) => {
 routerUsers.delete("/user/:id", isAdmin, async (req, res) => {
   try {
     await User.findByIdAndDelete(req.params.id);
-    res.json({ message: "Utilisateur supprimé avec succès" });
+    res.status(201).json({ message: "Utilisateur supprimé avec succès" });
   } catch (error) {
     res.status(500).json({ message: "Erreur lors de la suppression de l'utilisateur" });
   }
@@ -101,16 +101,35 @@ routerUsers.delete("/user/:id", isAdmin, async (req, res) => {
 
 routerUsers.post("/login", async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password,pseudo } = req.body;
     const user = await User.findOne({ email });
 
-    if (!user || !(await bcrypt.compare(password, user.password))) {
-      return res.status(401).json({ message: "Email ou mot de passe incorrect" });
+    if(user && user.role==="admin"){
+      if (!user || !(await bcrypt.compare(password, user.password))) {
+        return res.status(401).json({ message: "Email ou mot de passe incorrect" });
+      }
+    }
+    if(!user){
+      const userPseudo = await User.findOne({ pseudo});
+      if (!userPseudo){
+        return res.status(401).json({ message: "Pseudo ou mot de passe incorrect" });
+      }
+      else{
+        const token = res.jwt({role: userPseudo.role, id: userPseudo._id})
+        return res.status(200).json({ token:token.token, id:userPseudo._id });
+      }
     }
 
-    const token = res.jwt({role: user.role, id: user._id})
-    res.status(200).json({ token });
+    if(user){
+      const token = res.jwt({role: user.role, id: user._id})
+      return res.status(200).json({ token:token.token, id:user._id });
+    }
+    else{
+      return res.status(404).json({ message: "Utilisateur non trouvé" });
+    }
+
+    
   } catch (error) {
-    res.status(500).json({ message: "Erreur lors de la connexion" });
+    return res.status(500).json({ message: "Erreur lors de la connexion" });
   }
 });
