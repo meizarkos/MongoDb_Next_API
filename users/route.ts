@@ -74,14 +74,14 @@ routerUsers.patch("/banArtiste/:id",isAdmin, async (req, res) => {
   }
 });
 
-routerUsers.patch("/debanArtiste/:id", isAdmin, async (req, res) => {
+routerUsers.patch("/debanArtiste/:id",isAdmin, async (req, res) => {
   try {
     const artist = await User.findById(req.params.id) as Artiste;
 
     if (artist) {
       const update = { ban: false }
       await User.findByIdAndUpdate(req.params.id, update);
-      res.status(200).json({ message: "Artiste banni avec succès" });
+      res.status(200).json({ message: "Artiste débanni avec succès" });
     } else {
       res.status(404).json({ message: "Artiste non trouvé" });
     }
@@ -101,7 +101,7 @@ routerUsers.delete("/user/:id", isAdmin, async (req, res) => {
 
 routerUsers.post("/login", async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password,pseudo } = req.body;
     const user = await User.findOne({ email });
 
     if(user && user.role==="admin"){
@@ -109,6 +109,17 @@ routerUsers.post("/login", async (req, res) => {
         return res.status(401).json({ message: "Email ou mot de passe incorrect" });
       }
     }
+    if(!user){
+      const userPseudo = await User.findOne({ pseudo});
+      if (!userPseudo){
+        return res.status(401).json({ message: "Pseudo ou mot de passe incorrect" });
+      }
+      else{
+        const token = res.jwt({role: userPseudo.role, id: userPseudo._id})
+        return res.status(200).json({ token:token.token, id:userPseudo._id });
+      }
+    }
+
     if(user){
       const token = res.jwt({role: user.role, id: user._id})
       return res.status(200).json({ token:token.token, id:user._id });
