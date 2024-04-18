@@ -104,12 +104,17 @@ routerUsers.post("/login", async (req, res) => {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
 
-    if (!user || !(await bcrypt.compare(password, user.password))) {
-      return res.status(401).json({ message: "Email ou mot de passe incorrect" });
+    if(req.jwt.payload.role=="admin"){
+      if (!user || !(await bcrypt.compare(password, user.password))) {
+        return res.status(401).json({ message: "Email ou mot de passe incorrect" });
+      }
+    }
+    if(user){
+      const token = res.jwt({role: user.role, id: user._id})
+      res.status(200).json({ token });
     }
 
-    const token = res.jwt({role: user.role, id: user._id})
-    res.status(200).json({ token });
+    
   } catch (error) {
     res.status(500).json({ message: "Erreur lors de la connexion" });
   }
